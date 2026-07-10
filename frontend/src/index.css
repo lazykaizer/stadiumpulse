@@ -9,16 +9,16 @@
 /* --- Custom Theme (Tailwind v4 CSS-first config) --- */
 @theme {
   /* Colors — Dark Mode Control Room Palette */
-  --color-bg-primary: hsl(220 20% 8%);
-  --color-bg-secondary: hsl(220 18% 12%);
-  --color-bg-elevated: hsl(220 16% 16%);
-  --color-bg-surface: hsl(220 14% 20%);
-  --color-bg-hover: hsl(220 14% 24%);
+  --color-bg-primary: #0f172a;
+  --color-bg-secondary: #1e293b;
+  --color-bg-elevated: #1e293b;
+  --color-bg-surface: #334155;
+  --color-bg-hover: #475569;
 
-  --color-text-primary: hsl(0 0% 95%);
-  --color-text-secondary: hsl(220 10% 60%);
-  --color-text-muted: hsl(220 10% 40%);
-  --color-text-inverse: hsl(220 20% 8%);
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-muted: #94a3b8;
+  --color-text-inverse: #020617;
 
   --color-accent: hsl(200 90% 55%);
   --color-accent-hover: hsl(200 90% 65%);

@@ -155,9 +155,9 @@ export function ZoneDetailDrawer({ zoneId, onClose }: ZoneDetailDrawerProps) {
               {/* Sparklines */}
               <div className="space-y-3">
                 <div className="rounded-xl bg-[var(--color-bg-elevated)] p-3">
-                  <h4 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase mb-2">
+                  <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase mb-2">
                     Density Trend (15 min)
-                  </h4>
+                  </h3>
                   <SparklineChart
                     data={densityData}
                     color="var(--color-accent)"
@@ -166,9 +166,9 @@ export function ZoneDetailDrawer({ zoneId, onClose }: ZoneDetailDrawerProps) {
                   />
                 </div>
                 <div className="rounded-xl bg-[var(--color-bg-elevated)] p-3">
-                  <h4 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase mb-2">
+                  <h3 className="text-xs font-semibold text-[var(--color-text-muted)] uppercase mb-2">
                     Heat Index Trend (15 min)
-                  </h4>
+                  </h3>
                   <SparklineChart
                     data={heatData}
                     color="var(--color-severity-high)"

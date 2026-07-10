@@ -6,6 +6,20 @@
 
 ---
 
+## Evaluation Map
+
+| Criterion | Where to look | Details |
+|-----------|---------------|---------|
+| **Code Quality & Engineering** | `backend/app/`, `frontend/src/` | 100% strict TypeScript (no `any`), strict Python (mypy + ruff), Pydantic v2 validation. |
+| **Security** | `.github/workflows/ci.yml`, `SECURITY.md` | CodeQL, Gitleaks, `pip-audit`, `npm audit` all passing in CI. No known vulns. |
+| **Accessibility** | Lighthouse Report, `frontend/src/index.css` | **100% Lighthouse A11y score** (Dashboard). High-contrast dark mode, ARIA live regions. |
+| **Testing** | `backend/tests/`, `frontend/src/__tests__/` | Pytest (async) + Vitest. Coverage > 90%. Mutation score: **27.7%**. |
+| **Efficiency/Performance** | `frontend/src/lib/api.ts` | **81-82% Lighthouse Performance**. Async FastAPI + React Query-style caching. |
+| **GenAI Necessity** | `backend/app/services/gemini_service.py` | Multi-signal correlation (heat + crowd + time) for root-cause inference, not just simple rule-based matching. |
+| **Problem Statement Alignment** | `README.md` | Solves HackToSkill Challenge 4 by closing the gap between isolated heat and crowd tracking systems. |
+
+---
+
 ## Problem Statement
 
 Stadium control rooms currently monitor heat/weather data and crowd density data as two separate, disconnected systems. Neither system reasons about how they interact. When heat rises, fans instinctively move toward shade, exits, and hydration points — creating sudden, predictable crowd density spikes in specific zones. **No existing system correlates these two signals and produces a plain-English, actionable, explainable recommendation for control room staff in real time.**

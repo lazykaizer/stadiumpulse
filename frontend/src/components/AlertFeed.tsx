@@ -52,9 +52,9 @@ export function AlertFeed({ initialAlerts }: AlertFeedProps) {
       <div className="flex items-center justify-between px-4 py-3 border-b border-[var(--color-border)]">
         <div className="flex items-center gap-2">
           <Bell size={16} className="text-[var(--color-accent)]" />
-          <h3 className="text-sm font-semibold text-[var(--color-text-primary)]">
+          <h2 className="text-sm font-semibold text-[var(--color-text-primary)]">
             Alert Feed
-          </h3>
+          </h2>
           <span className="text-xs px-2 py-0.5 rounded-full bg-[var(--color-accent-muted)] text-[var(--color-accent)]">
             {alerts.length}
           </span>

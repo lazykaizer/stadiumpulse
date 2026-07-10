@@ -15,6 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Gitleaks scan
+        uses: gitleaks/gitleaks-action@v2
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
@@ -30,6 +33,11 @@ jobs:
 
       - name: Test (pytest)
         run: python -m pytest tests/ -v --cov=app --cov-report=term-missing
+
+      - name: Python dependency audit
+        run: |
+          pip install pip-audit
+          pip-audit -r requirements.txt
 
   frontend:
     runs-on: ubuntu-latest
@@ -54,6 +62,9 @@ jobs:
 
       - name: Test (vitest)
         run: npx vitest run --coverage
+
+      - name: Frontend dependency audit
+        run: npm audit --audit-level=high
 
       - name: Accessibility (axe-core)
         run: npx vitest run src/__tests__/accessibility.test.tsx
