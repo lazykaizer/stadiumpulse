@@ -1,8 +1,10 @@
 /**
  * WCAG 2.1 AA Accessibility Audit Tests using axe-core
  */
+import { describe, it, expect } from "vitest";
 import { render } from "@testing-library/react";
 import { axe } from "vitest-axe";
+import "vitest-axe/extend-expect";
 import { BrowserRouter } from "react-router-dom";
 import { SeverityBadge } from "../components/SeverityBadge";
 import { HeroPage } from "../pages/HeroPage";

@@ -1,6 +1,6 @@
+import { describe, it, expect } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { SeverityBadge } from "../../components/SeverityBadge";
-import type { AlertSeverity } from "@/types";
 
 describe("SeverityBadge", () => {
   it("renders correctly for low severity", () => {
