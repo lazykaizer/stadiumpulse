@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import random
+from typing import Any, Literal
 
 import structlog
 
@@ -24,7 +25,6 @@ class GeminiService:
     def __init__(self, settings: Settings) -> None:
         self._settings = settings
         self._mock_mode = settings.gemini_mock_mode
-        from typing import Any
         self._client: Any = None
         self._model_name = settings.gemini_model
 
@@ -96,9 +96,12 @@ class GeminiService:
             output = ReasoningOutput.model_validate(parsed)
             log.info("gemini_output_validated", severity=output.severity)
             return output
-        except (json.JSONDecodeError, Exception) as parse_err:
+        except json.JSONDecodeError as parse_err:
             log.error("gemini_output_parse_failed", error=str(parse_err), raw=raw_text[:500])
             raise ValueError(f"Gemini returned unparseable output: {parse_err}") from parse_err
+        except ValueError as validation_err:
+            log.error("gemini_output_validation_failed", error=str(validation_err))
+            raise ValueError(f"Gemini output failed validation: {validation_err}") from validation_err
 
     def _generate_mock_output(self, reasoning_input: ReasoningInput) -> ReasoningOutput:
         """Generate realistic mock reasoning output for local development.
@@ -110,55 +113,70 @@ class GeminiService:
         density = ri.crowd_density
         heat = ri.heat_index
         has_shade = ri.has_shade
-        languages = ri.languages_present
 
-        from typing import Literal
-        severity: Literal['low', 'moderate', 'high', 'critical']
-        if density > 80 and heat > 38:
-            severity = "critical"
-        elif density > 70 or (density > 50 and heat > 38):
-            severity = "high"
-        elif density > 50 or heat > 34:
-            severity = "moderate"
-        else:
-            severity = "low"
 
+        severity = self._classify_severity(density, heat)
 
         # Build contextual reasoning based on actual signals
-        trend_direction = "rising" if len(ri.crowd_density_trend) >= 2 and ri.crowd_density_trend[-1] > ri.crowd_density_trend[0] else "stable"
-        heat_direction = "rising" if len(ri.heat_index_trend) >= 2 and ri.heat_index_trend[-1] > ri.heat_index_trend[0] else "stable"
+        trend_direction = self._compute_trend_direction(ri.crowd_density_trend)
+        heat_direction = self._compute_trend_direction(ri.heat_index_trend)
 
         # Contextual recommendations
         recommendations: dict[str, str] = {
-            "critical": f"Immediately dispatch medical team and open auxiliary gates at {ri.zone_name} — density at {density}% is compounding with {heat}°C heat index, creating acute safety risk for stationary fans.",
-            "high": f"Pre-position additional stewards at {ri.zone_name} and prepare crowd redirection — density trend is {trend_direction} at {density}% with heat index {heat}°C {'and no shade coverage' if not has_shade else ''}.",
-            "moderate": f"Increase monitoring frequency for {ri.zone_name} — {'heat index' if heat > 34 else 'crowd density'} is approaching intervention threshold.",
-            "low": f"{ri.zone_name} is operating within safe parameters — maintain routine monitoring.",
+            "critical": (
+                f"Immediately dispatch medical team and open auxiliary gates at {ri.zone_name} "
+                f"— density at {density}% is compounding with {heat}°C heat index, "
+                f"creating acute safety risk for stationary fans."
+            ),
+            "high": (
+                f"Pre-position additional stewards at {ri.zone_name} and prepare crowd "
+                f"redirection — density trend is {trend_direction} at {density}% with "
+                f"heat index {heat}°C"
+                f"{' and no shade coverage' if not has_shade else ''}."
+            ),
+            "moderate": (
+                f"Increase monitoring frequency for {ri.zone_name} — "
+                f"{'heat index' if heat > 34 else 'crowd density'} is approaching "
+                f"intervention threshold."
+            ),
+            "low": (
+                f"{ri.zone_name} is operating within safe parameters "
+                f"— maintain routine monitoring."
+            ),
         }
 
         # Contextual reasoning chain
         reasoning_chains: dict[str, str] = {
             "critical": (
-                f"{ri.zone_name} density is at {density}% ({trend_direction}) while heat index has reached {heat}°C ({heat_direction}). "
-                f"This is a compounding dual-risk event: the {'pre-event entry surge' if 'kickoff' in ri.time_to_event else 'crowd movement'} is creating physical congestion "
-                f"while extreme heat increases medical risk for fans who cannot move freely. "
+                f"{ri.zone_name} density is at {density}% ({trend_direction}) while "
+                f"heat index has reached {heat}°C ({heat_direction}). "
+                f"This is a compounding dual-risk event: the "
+                f"{'pre-event entry surge' if 'kickoff' in ri.time_to_event else 'crowd movement'} "
+                f"is creating physical congestion while extreme heat increases medical risk "
+                f"for fans who cannot move freely. "
                 f"{'Without shade coverage, exposure risk is amplified for all standing fans.' if not has_shade else 'Shade covers seated areas but entry queues remain exposed.'} "
-                f"Historical pattern: {ri.historical_incidents[0] if ri.historical_incidents else 'high-density heat events correlate with medical incidents in this zone'}."
+                f"Historical pattern: "
+                f"{ri.historical_incidents[0] if ri.historical_incidents else 'high-density heat events correlate with medical incidents in this zone'}."
             ),
             "high": (
-                f"{ri.zone_name} density has been {trend_direction} and is at {density}%, while heat index is {heat}°C ({heat_direction}). "
+                f"{ri.zone_name} density has been {trend_direction} and is at {density}%, "
+                f"while heat index is {heat}°C ({heat_direction}). "
                 f"{'The lack of shade is driving fans toward shaded zones, but this zone is receiving overflow.' if not has_shade else 'This shaded zone is absorbing heat-migration overflow from adjacent unshaded areas.'} "
-                f"At current entry rate ({ri.entry_rate} fans/min), density will {'cross 85% within ~10 minutes' if density > 70 else 'continue to build pressure'}. "
+                f"At current entry rate ({ri.entry_rate} fans/min), density will "
+                f"{'cross 85% within ~10 minutes' if density > 70 else 'continue to build pressure'}. "
                 f"{'Neighboring zones have capacity to absorb redirected fans.' if ri.neighboring_zones else ''}"
             ),
             "moderate": (
                 f"{ri.zone_name} is at {density}% density with heat index {heat}°C. "
-                f"While neither signal is critical independently, the {trend_direction} density trend combined with {heat_direction} heat "
-                f"warrants heightened attention. {'No hydration point in this zone increases dehydration risk as heat rises.' if not ri.has_hydration_point else ''} "
+                f"While neither signal is critical independently, the {trend_direction} "
+                f"density trend combined with {heat_direction} heat warrants heightened "
+                f"attention. "
+                f"{'No hydration point in this zone increases dehydration risk as heat rises.' if not ri.has_hydration_point else ''} "
                 f"Recommend monitoring over next 10 minutes for trajectory confirmation."
             ),
             "low": (
-                f"{ri.zone_name} density at {density}% is well within capacity, and heat index at {heat}°C is below alert thresholds. "
+                f"{ri.zone_name} density at {density}% is well within capacity, and "
+                f"heat index at {heat}°C is below alert thresholds. "
                 f"Trends are {trend_direction} for density and {heat_direction} for heat. "
                 f"No compounding risk factors detected. Continue routine monitoring."
             ),
@@ -169,13 +187,23 @@ class GeminiService:
             "critical": [
                 f"Open auxiliary gates at {ri.zone_name} immediately",
                 f"Dispatch medical team to {ri.zone_name} entry area",
-                f"Redirect incoming fans to {ri.neighboring_zones[0].zone_name if ri.neighboring_zones else 'nearest available zone'} via PA and signage",
+                (
+                    f"Redirect incoming fans to "
+                    f"{ri.neighboring_zones[0].zone_name if ri.neighboring_zones else 'nearest available zone'}"
+                    f" via PA and signage"
+                ),
                 f"Deploy mobile hydration cart to {ri.zone_name}",
             ],
             "high": [
                 f"Pre-position 2 additional stewards at {ri.zone_name}",
-                f"Prepare redirection signage for {ri.neighboring_zones[0].zone_name if ri.neighboring_zones else 'alternate zone'}",
-                f"{'Activate additional hydration station' if ri.has_hydration_point else 'Deploy mobile hydration cart'} at {ri.zone_name}",
+                (
+                    f"Prepare redirection signage for "
+                    f"{ri.neighboring_zones[0].zone_name if ri.neighboring_zones else 'alternate zone'}"
+                ),
+                (
+                    f"{'Activate additional hydration station' if ri.has_hydration_point else 'Deploy mobile hydration cart'}"
+                    f" at {ri.zone_name}"
+                ),
             ],
             "moderate": [
                 f"Increase monitoring frequency for {ri.zone_name} to every 2 minutes",
@@ -187,6 +215,51 @@ class GeminiService:
         }
 
         # Generate multilingual alerts for EXACTLY the languages present
+        multilingual = self._build_multilingual_alerts(ri, severity)
+
+        confidence = round(random.uniform(0.7, 0.95), 2)
+
+        return ReasoningOutput(
+            zone_id=ri.zone_id,
+            severity=severity,
+            recommendation=recommendations[severity],
+            reasoning=reasoning_chains[severity],
+            suggested_actions=actions_map[severity],
+            multilingual_alerts=multilingual,
+            confidence=confidence,
+        )
+
+    # ------------------------------------------------------------------
+    # Private helpers
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _classify_severity(
+        density: float,
+        heat: float,
+    ) -> Literal["low", "moderate", "high", "critical"]:
+        """Classify severity from crowd density and heat index signals."""
+        if density > 80 and heat > 38:
+            return "critical"
+        if density > 70 or (density > 50 and heat > 38):
+            return "high"
+        if density > 50 or heat > 34:
+            return "moderate"
+        return "low"
+
+    @staticmethod
+    def _compute_trend_direction(trend: list[float]) -> str:
+        """Determine whether a trend series is rising or stable."""
+        if len(trend) >= 2 and trend[-1] > trend[0]:
+            return "rising"
+        return "stable"
+
+    @staticmethod
+    def _build_multilingual_alerts(
+        ri: ReasoningInput,
+        severity: Literal["low", "moderate", "high", "critical"],
+    ) -> dict[str, str]:
+        """Build alert text for exactly the languages present in the zone."""
         alert_templates: dict[str, dict[str, str]] = {
             "en": {
                 "critical": f"URGENT: {ri.zone_name} entry is at capacity. Please use an alternate gate. Medical assistance available.",
@@ -227,18 +300,7 @@ class GeminiService:
         }
 
         multilingual: dict[str, str] = {}
-        for lang in languages:
+        for lang in ri.languages_present:
             lang_templates = alert_templates.get(lang, alert_templates["en"])
             multilingual[lang] = lang_templates.get(severity, lang_templates["low"])
-
-        confidence = round(random.uniform(0.7, 0.95), 2)
-
-        return ReasoningOutput(
-            zone_id=ri.zone_id,
-            severity=severity,
-            recommendation=recommendations[severity],
-            reasoning=reasoning_chains[severity],
-            suggested_actions=actions_map[severity],
-            multilingual_alerts=multilingual,
-            confidence=confidence,
-        )
+        return multilingual

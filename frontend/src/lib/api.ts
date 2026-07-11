@@ -56,10 +56,19 @@ async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
 // Zone Endpoints
 // ---------------------------------------------------------------------------
 
+/**
+ * Fetch the current state of all stadium zones.
+ * @returns A promise resolving to an array of ZoneData objects.
+ */
 export async function fetchZones(): Promise<ZoneData[]> {
   return apiFetch<ZoneData[]>("/api/zones");
 }
 
+/**
+ * Fetch detailed information for a specific zone, including historical trends.
+ * @param zoneId - The unique identifier of the zone.
+ * @returns A promise resolving to the zone's details and history.
+ */
 export async function fetchZoneDetail(zoneId: string): Promise<ZoneDetail> {
   return apiFetch<ZoneDetail>(`/api/zones/${zoneId}`);
 }
@@ -68,6 +77,11 @@ export async function fetchZoneDetail(zoneId: string): Promise<ZoneDetail> {
 // Alert Endpoints
 // ---------------------------------------------------------------------------
 
+/**
+ * Fetch a paginated, filtered list of alerts.
+ * @param filters - Optional filters for severity, zone, and time range.
+ * @returns A promise resolving to the alert feed.
+ */
 export async function fetchAlerts(filters: Partial<AlertFilter> = {}): Promise<AlertFeed> {
   const params = new URLSearchParams();
   if (filters.severity) params.set("severity", filters.severity);
@@ -84,6 +98,11 @@ export async function fetchAlerts(filters: Partial<AlertFilter> = {}): Promise<A
 // Reasoning Endpoints
 // ---------------------------------------------------------------------------
 
+/**
+ * Trigger the Gemini reasoning engine to generate an assessment.
+ * @param zoneId - Optional zone ID. If omitted, reasons across all zones and returns the most critical.
+ * @returns A promise resolving to the AI reasoning output.
+ */
 export async function triggerReasoning(zoneId?: string): Promise<ReasoningOutput> {
   const path = zoneId ? `/api/reason/${zoneId}` : "/api/reason";
   return apiFetch<ReasoningOutput>(path, { method: "POST" });
@@ -93,6 +112,11 @@ export async function triggerReasoning(zoneId?: string): Promise<ReasoningOutput
 // Upload Endpoints
 // ---------------------------------------------------------------------------
 
+/**
+ * Upload a dataset file (e.g., historical incidents or zone config).
+ * @param file - The file object to upload.
+ * @returns A promise resolving to the upload result summary.
+ */
 export async function uploadData(file: File): Promise<UploadResult> {
   const formData = new FormData();
   formData.append("file", file);
@@ -111,6 +135,10 @@ export async function uploadData(file: File): Promise<UploadResult> {
   return toCamelCase<UploadResult>(data);
 }
 
+/**
+ * Reset all data to the default synthesized initial state.
+ * @returns A promise resolving to the reset operation result.
+ */
 export async function resetData(): Promise<UploadResult> {
   return apiFetch<UploadResult>("/api/data/reset", { method: "POST" });
 }
@@ -119,6 +147,10 @@ export async function resetData(): Promise<UploadResult> {
 // Health Check
 // ---------------------------------------------------------------------------
 
+/**
+ * Check the health status of the backend API.
+ * @returns A promise resolving to the health check status.
+ */
 export async function healthCheck(): Promise<{ status: string; service: string }> {
   return apiFetch<{ status: string; service: string }>("/api/health");
 }

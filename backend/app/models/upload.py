@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -30,7 +30,6 @@ class UploadRow(BaseModel):
             return [lang.strip() for lang in v.split(";") if lang.strip()]
         if isinstance(v, list):
             return [str(lang).strip() for lang in v if lang]
-        from typing import cast
         return cast("list[str] | None", v)
 
 

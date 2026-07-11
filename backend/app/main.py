@@ -6,7 +6,7 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
 import structlog
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -14,6 +14,7 @@ from slowapi.util import get_remote_address
 
 from app.config import Settings, load_settings
 from app.logging_config import setup_logging
+from app.middleware.security_headers import security_headers_middleware
 from app.routers import alerts, reasoning, upload, zones
 from app.services.firestore_service import FirestoreService
 from app.services.synthetic_data import SyntheticDataGenerator
@@ -79,21 +80,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_headers=["*"],
     )
 
-    # Security headers (Helmet-equivalent)
-    from collections.abc import Awaitable, Callable
-    @app.middleware("http")
-    async def security_headers(request: Request, call_next: Callable[[Request], Awaitable[Response]]) -> Response:
-        response: Response = await call_next(request)
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
-        response.headers["Content-Security-Policy"] = (
-            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
-            "font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com"
-        )
-        return response
+    # Security headers (extracted middleware module)
+    app.middleware("http")(security_headers_middleware)
 
     # Rate limiting
     limiter = Limiter(key_func=get_remote_address, default_limits=[settings.rate_limit])
@@ -108,7 +96,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     # --- Health check ---
     @app.get("/api/health", tags=["health"])
-    async def health_check() -> dict[str, str]:
+    async def health_check(_request: Request) -> dict[str, str]:
+        """Return service health status."""
         return {"status": "healthy", "service": "stadiumpulse"}
 
     return app

@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 
 from pydantic import BaseModel, Field
@@ -43,7 +43,7 @@ class ZoneData(BaseModel):
         default_factory=lambda: ["en"],
         description="ISO 639-1 language codes detected/configured for this zone",
     )
-    last_updated: datetime = Field(default_factory=datetime.utcnow)
+    last_updated: datetime = Field(default_factory=lambda: datetime.now(UTC))
 
 
 class ZoneHistory(BaseModel):

@@ -1,6 +1,5 @@
 import React, { Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import "./index.css";
 
 const HeroPage = React.lazy(() => import("./pages/HeroPage").then(m => ({ default: m.HeroPage })));
 const DashboardPage = React.lazy(() => import("./pages/DashboardPage").then(m => ({ default: m.DashboardPage })));

@@ -7,6 +7,7 @@ from datetime import datetime
 from fastapi import APIRouter, Request
 
 from app.models.alert import AlertFeed, AlertFilter, AlertSeverity
+from app.services.firestore_service import FirestoreService
 
 router = APIRouter()
 
@@ -22,7 +23,7 @@ async def get_alerts(
     page_size: int = 20,
 ) -> AlertFeed:
     """Return paginated, filterable alert feed — reverse chronological."""
-    fs = request.app.state.firestore
+    fs: FirestoreService = request.app.state.firestore
     filters = AlertFilter(
         severity=severity,
         zone_id=zone_id,
@@ -31,5 +32,4 @@ async def get_alerts(
         page=max(1, page),
         page_size=min(100, max(2, page_size)),
     )
-    from typing import cast
-    return cast("AlertFeed", await fs.get_alerts(filters))
+    return await fs.get_alerts(filters)

@@ -6,16 +6,23 @@ Assembles zone signals, calls Gemini, validates response, stores result.
 from __future__ import annotations
 
 import structlog
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, HTTPException, Path, Request
 
 from app.models.alert import Alert, AlertSeverity
 from app.models.reasoning import NeighborZoneSummary, ReasoningInput, ReasoningOutput
+from app.services.firestore_service import FirestoreService
 from app.services.gemini_service import GeminiService
 from app.services.synthetic_data import SyntheticDataGenerator
 
 logger = structlog.get_logger("app.routers.reasoning")
 
 router = APIRouter()
+
+# Severity ordering for selecting the highest-priority result.
+_SEVERITY_RANK: dict[str, int] = {"critical": 4, "high": 3, "moderate": 2, "low": 1}
+
+# Severity levels that warrant creating an alert.
+_ALERT_SEVERITIES: frozenset[str] = frozenset({"moderate", "high", "critical"})
 
 
 @router.post("/reason", response_model=ReasoningOutput)
@@ -26,7 +33,7 @@ async def run_reasoning(request: Request, zone_id: str | None = None) -> Reasoni
     calls Gemini, validates the response, stores the recommendation
     and creates an alert if severity warrants it.
     """
-    fs = request.app.state.firestore
+    fs: FirestoreService = request.app.state.firestore
     settings = request.app.state.settings
 
     # Initialize Gemini service (lazy, per-request for now)
@@ -53,15 +60,17 @@ async def run_reasoning(request: Request, zone_id: str | None = None) -> Reasoni
         raise HTTPException(status_code=500, detail="Reasoning failed for all zones")
 
     # Return the highest severity result
-    severity_order = {"critical": 4, "high": 3, "moderate": 2, "low": 1}
-    results.sort(key=lambda r: severity_order.get(r.severity, 0), reverse=True)
+    results.sort(key=lambda r: _SEVERITY_RANK.get(r.severity, 0), reverse=True)
     return results[0]
 
 
 @router.post("/reason/{zone_id}", response_model=ReasoningOutput)
-async def run_reasoning_for_zone(zone_id: str, request: Request) -> ReasoningOutput:
+async def run_reasoning_for_zone(
+    request: Request,
+    zone_id: str = Path(pattern=r"^zone-[a-z0-9-]+$"),
+) -> ReasoningOutput:
     """Run AI reasoning for a specific zone."""
-    fs = request.app.state.firestore
+    fs: FirestoreService = request.app.state.firestore
     settings = request.app.state.settings
     gemini = GeminiService(settings)
     return await _reason_for_zone(zone_id, fs, gemini)
@@ -69,13 +78,10 @@ async def run_reasoning_for_zone(zone_id: str, request: Request) -> ReasoningOut
 
 async def _reason_for_zone(
     zone_id: str,
-    fs: object,
+    fs: FirestoreService,
     gemini: GeminiService,
 ) -> ReasoningOutput:
     """Internal: assemble input, call reasoning, store result, create alert."""
-    from app.services.firestore_service import FirestoreService
-    assert isinstance(fs, FirestoreService)
-
     # Get zone data
     zone = await fs.get_zone(zone_id)
     if zone is None:
@@ -140,7 +146,7 @@ async def _reason_for_zone(
     await fs.store_recommendation(zone_id, result.model_dump(mode="json"))
 
     # Create alert if severity is moderate or higher
-    if result.severity in ("moderate", "high", "critical"):
+    if result.severity in _ALERT_SEVERITIES:
         alert = Alert(
             alert_id=fs.generate_alert_id(),
             zone_id=zone_id,

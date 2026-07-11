@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from enum import StrEnum
 
 from pydantic import BaseModel, Field
@@ -33,7 +33,7 @@ class Alert(BaseModel):
     )
     confidence: float = Field(ge=0.0, le=1.0, default=0.0)
     is_stale: bool = Field(default=False, description="True if this is a cached/fallback alert")
-    created_at: datetime = Field(default_factory=datetime.utcnow)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(UTC))
     resolved: bool = Field(default=False)
     resolved_at: datetime | None = Field(default=None)
 
