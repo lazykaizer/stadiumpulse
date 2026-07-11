@@ -11,6 +11,27 @@
 
 ---
 
+## Table of Contents
+
+- [Evaluation Map](#evaluation-map)
+- [Problem Statement](#problem-statement)
+- [Why GenAI (Not Rule-Based Code)](#why-genai-not-rule-based-code)
+- [Architecture](#architecture)
+- [Tech Stack](#tech-stack)
+- [Features](#features)
+- [Setup & Installation](#setup--installation)
+- [API Documentation](#api-documentation)
+- [Testing](#testing)
+- [Accessibility](#accessibility)
+- [Security](#security)
+- [Data & Testing With Real Datasets](#data--testing-with-real-datasets)
+- [Contributing](#contributing)
+- [License](#license)
+- [Sources](#sources)
+- [Team / Credits](#team--credits)
+
+---
+
 ## Evaluation Map
 
 | Criterion | Where to look | Details |
@@ -209,6 +230,15 @@ docker-compose up --build
 
 ---
 
+## API Documentation
+
+The backend is powered by FastAPI, which provides out-of-the-box interactive API documentation based on OpenAPI. Once the backend is running, you can view the schemas and test endpoints (e.g., `/zones`, `/reason`) here:
+
+- **Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
+- **ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+---
+
 ## Testing
 
 ### Backend Tests
@@ -272,6 +302,24 @@ The upload feature (`/dashboard/upload`) accepts CSV or JSON files with the foll
 | languages_present | string[] | No | ISO 639-1 codes |
 
 On successful upload, the dashboard immediately reflects the uploaded dataset with a visible banner. Evaluators can test with their own real-format data.
+
+---
+
+## Contributing
+
+We love your input! We want to make contributing to this project as easy and transparent as possible. Whether it's:
+- Reporting a bug
+- Discussing the current state of the code
+- Submitting a fix
+- Proposing new features
+
+Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for details on how to get started. Be sure to also review our [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and [SECURITY.md](SECURITY.md) guidelines to ensure a welcoming and secure environment.
+
+---
+
+## License
+
+This project is open-sourced software licensed under the terms found in the [LICENSE](LICENSE) file.
 
 ---
 
