@@ -142,19 +142,19 @@ class TestSyntheticDataGenerator:
         # exact boundaries should not be CRITICAL
         assert SyntheticDataGenerator._compute_risk(80.0, 38.1) == RiskLevel.HIGH
         assert SyntheticDataGenerator._compute_risk(80.1, 38.0) == RiskLevel.HIGH
-        
+
         # high_density or (elevated_density and high_heat) => HIGH
         # elevated_density > 50.0
         assert SyntheticDataGenerator._compute_risk(50.1, 38.1) == RiskLevel.HIGH
         assert SyntheticDataGenerator._compute_risk(50.0, 38.1) == RiskLevel.MODERATE
         assert SyntheticDataGenerator._compute_risk(80.1, 30.0) == RiskLevel.HIGH
-        
+
         # elevated_density or elevated_heat => MODERATE
         # elevated_heat > 34.0
         assert SyntheticDataGenerator._compute_risk(50.1, 30.0) == RiskLevel.MODERATE
         assert SyntheticDataGenerator._compute_risk(30.0, 34.1) == RiskLevel.MODERATE
         assert SyntheticDataGenerator._compute_risk(50.0, 34.0) == RiskLevel.LOW
-        
+
         # below all thresholds => LOW
         assert SyntheticDataGenerator._compute_risk(30.0, 30.0) == RiskLevel.LOW
 

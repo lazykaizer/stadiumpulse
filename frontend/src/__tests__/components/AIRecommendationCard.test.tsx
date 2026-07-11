@@ -12,11 +12,10 @@ describe('AIRecommendationCard', () => {
       recommendation: 'Test recommendation',
       reasoning: 'Test reasoning',
       confidence: 0.8,
-      suggestedActions: [],
+      suggestedActions: ['Action 1'],
       multilingualAlerts: {
         'en': 'Hello',
         'ar': 'مرحبا',
-        'es': 'Hola'
       }
     };
     
@@ -34,5 +33,25 @@ describe('AIRecommendationCard', () => {
     const arText = screen.getByText('مرحبا');
     expect(arText).toHaveAttribute('lang', 'ar');
     expect(arText).toHaveAttribute('dir', 'rtl');
+
+    // Expand reasoning section
+    const whyButton = screen.getByRole('button', { name: /Why this recommendation\?/i });
+    await user.click(whyButton);
+    expect(screen.getByText('Test reasoning')).toBeInTheDocument();
+
+    // Click suggested action
+    const actionButton = screen.getByRole('button', { name: /Action 1/i });
+    await user.click(actionButton);
+  });
+
+  it('renders loading state', () => {
+    render(<AIRecommendationCard recommendation={null} isLoading={true} />);
+    expect(screen.getByText('AI Recommendation')).toBeInTheDocument();
+  });
+
+  it('renders empty state when no recommendation', () => {
+    render(<AIRecommendationCard recommendation={null} isLoading={false} />);
+    expect(screen.getByText(/No zones exceeding threshold/i)).toBeInTheDocument();
   });
 });
+
