@@ -29,7 +29,7 @@ async def get_alerts(
         start_time=start_time,
         end_time=end_time,
         page=max(1, page),
-        page_size=min(100, max(1, page_size)),
+        page_size=min(100, max(2, page_size)),
     )
     from typing import cast
     return cast("AlertFeed", await fs.get_alerts(filters))

@@ -32,7 +32,7 @@ export function ZoneMap({ zones, selectedZoneId, onZoneSelect }: ZoneMapProps) {
   const zonesMap = new Map(zones.map((z) => [z.zoneId, z]));
 
   return (
-    <div className="relative w-full" role="img" aria-label="Stadium zone map">
+    <div className="relative w-full" role="group" aria-label="Interactive stadium zones container">
       <svg
         viewBox="0 0 600 420"
         className="w-full h-auto"

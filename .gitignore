@@ -55,3 +55,10 @@ ui-debug.log
 # Logs
 *.log
 logs/
+
+# Testing & Caches
+.mutmut-cache
+.lighthouseci/
+playwright-report/
+test-results/
+*.bak

@@ -84,7 +84,7 @@ HISTORICAL_INCIDENTS: dict[str, list[str]] = {
         "Post-goal surge pattern: density spikes 15-20% within 3 minutes of goal",
         "No hydration point — medical incidents correlate with prolonged high heat",
     ],
-    "zone-d": [
+    "XXzone-dXX": [
         "Receives overflow from Zone C during heat events",
         "Shade availability makes this a natural refuge — plan for surge capacity",
     ],

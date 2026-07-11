@@ -48,7 +48,7 @@ export function HeroPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)]">
+    <main className="min-h-screen bg-[var(--color-bg-primary)]">
       {/* ====== SECTION A: Hero Banner ====== */}
       <section
         className="relative min-h-[90vh] flex flex-col items-center justify-center px-6 py-20 overflow-hidden"
@@ -138,7 +138,7 @@ export function HeroPage() {
               <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-1">
                 {card.headline}
               </h3>
-              <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+              <p className="text-xs text-[var(--color-text-secondary)] leading-relaxed">
                 {card.description}
                 {card.sourceIndex >= 0 && (
                   <sup className="text-[var(--color-accent)] ml-0.5">
@@ -334,6 +334,6 @@ export function HeroPage() {
           </div>
         </div>
       </footer>
-    </div>
+    </main>
   );
 }

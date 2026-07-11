@@ -136,8 +136,35 @@ class TestSyntheticDataGenerator:
         )
         assert changes > 0
 
-    def test_risk_level_computation(self) -> None:
-        assert SyntheticDataGenerator._compute_risk(85, 40) == RiskLevel.CRITICAL
-        assert SyntheticDataGenerator._compute_risk(85, 30) == RiskLevel.HIGH
-        assert SyntheticDataGenerator._compute_risk(60, 36) == RiskLevel.MODERATE
-        assert SyntheticDataGenerator._compute_risk(30, 30) == RiskLevel.LOW
+    def test_risk_level_computation_boundaries(self) -> None:
+        # high_density > 80.0, high_heat > 38.0 => CRITICAL
+        assert SyntheticDataGenerator._compute_risk(80.1, 38.1) == RiskLevel.CRITICAL
+        # exact boundaries should not be CRITICAL
+        assert SyntheticDataGenerator._compute_risk(80.0, 38.1) == RiskLevel.HIGH
+        assert SyntheticDataGenerator._compute_risk(80.1, 38.0) == RiskLevel.HIGH
+        
+        # high_density or (elevated_density and high_heat) => HIGH
+        # elevated_density > 50.0
+        assert SyntheticDataGenerator._compute_risk(50.1, 38.1) == RiskLevel.HIGH
+        assert SyntheticDataGenerator._compute_risk(50.0, 38.1) == RiskLevel.MODERATE
+        assert SyntheticDataGenerator._compute_risk(80.1, 30.0) == RiskLevel.HIGH
+        
+        # elevated_density or elevated_heat => MODERATE
+        # elevated_heat > 34.0
+        assert SyntheticDataGenerator._compute_risk(50.1, 30.0) == RiskLevel.MODERATE
+        assert SyntheticDataGenerator._compute_risk(30.0, 34.1) == RiskLevel.MODERATE
+        assert SyntheticDataGenerator._compute_risk(50.0, 34.0) == RiskLevel.LOW
+        
+        # below all thresholds => LOW
+        assert SyntheticDataGenerator._compute_risk(30.0, 30.0) == RiskLevel.LOW
+
+    def test_get_historical_incidents(self) -> None:
+        incidents = SyntheticDataGenerator.get_historical_incidents("zone-a")
+        assert len(incidents) == 2
+        assert "Shade-seeking spike observed when heat index exceeds 35°C" in incidents
+        assert SyntheticDataGenerator.get_historical_incidents("non-existent") == []
+
+    def test_get_zone_configs(self) -> None:
+        configs = SyntheticDataGenerator.get_zone_configs()
+        assert len(configs) == 6
+        assert configs[0]["zone_id"] == "zone-a"

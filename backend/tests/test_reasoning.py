@@ -156,9 +156,11 @@ class TestGeminiServiceMock:
 
         assert isinstance(result, ReasoningOutput)
         assert result.zone_id == "zone-c"
-        assert result.severity in ("low", "moderate", "high", "critical")
-        assert len(result.recommendation) > 0
-        assert len(result.reasoning) > 0
+        assert result.severity == "critical"
+        assert result.recommendation == "Immediately dispatch medical team and open auxiliary gates at Gate C — South Stand — density at 82.0% is compounding with 41.0°C heat index, creating acute safety risk for stationary fans."
+        assert result.reasoning == "Gate C — South Stand density is at 82.0% (rising) while heat index has reached 41.0°C (rising). This is a compounding dual-risk event: the pre-event entry surge is creating physical congestion while extreme heat increases medical risk for fans who cannot move freely. Without shade coverage, exposure risk is amplified for all standing fans. Historical pattern: Highest heat exposure zone — shade-seeking migration to Zone A/D at 36°C+."
+        assert "Open auxiliary gates at Gate C — South Stand immediately" in result.suggested_actions
+        assert 0.0 <= result.confidence <= 1.0
         assert 0.0 <= result.confidence <= 1.0
 
     @pytest.mark.asyncio
@@ -190,7 +192,8 @@ class TestGeminiServiceMock:
         )
         service = GeminiService(mock_settings)
         result = await service.reason(high_risk_input)
-        assert result.severity in ("high", "critical")
+        assert result.severity == "critical"
+        assert result.recommendation == "Immediately dispatch medical team and open auxiliary gates at Test Zone — density at 92.0% is compounding with 42.0°C heat index, creating acute safety risk for stationary fans."
 
     @pytest.mark.asyncio
     async def test_mock_low_risk_detection(self, mock_settings: Settings) -> None:
@@ -209,6 +212,7 @@ class TestGeminiServiceMock:
         service = GeminiService(mock_settings)
         result = await service.reason(low_risk_input)
         assert result.severity == "low"
+        assert result.recommendation == "Quiet Zone is operating within safe parameters — maintain routine monitoring."
 
 
 class TestMalformedGeminiOutput:

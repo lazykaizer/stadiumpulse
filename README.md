@@ -2,6 +2,11 @@
 
 **AI-powered heat-and-crowd risk reasoning for stadium control rooms**
 
+[![CI](https://github.com/lazykaizer/stadiumpulse/actions/workflows/ci.yml/badge.svg)](https://github.com/lazykaizer/stadiumpulse/actions/workflows/ci.yml)
+[![Mutation Score: 63.3%](https://img.shields.io/badge/mutation_score-63.3%25-yellow.svg)](https://github.com/lazykaizer/stadiumpulse)
+[![A11y: 100](https://img.shields.io/badge/A11y-100-brightgreen.svg)](docs/lighthouse-results.md)
+[![Performance: 94](https://img.shields.io/badge/Performance-94-brightgreen.svg)](docs/lighthouse-results.md)
+
 *HackToSkill Prompt Wars — Challenge 4: Smart Stadiums & Tournament Operations*
 
 ---
@@ -12,9 +17,9 @@
 |-----------|---------------|---------|
 | **Code Quality & Engineering** | `backend/app/`, `frontend/src/` | 100% strict TypeScript (no `any`), strict Python (mypy + ruff), Pydantic v2 validation. |
 | **Security** | `.github/workflows/ci.yml`, `SECURITY.md` | CodeQL, Gitleaks, `pip-audit`, `npm audit` all passing in CI. No known vulns. |
-| **Accessibility** | Lighthouse Report, `frontend/src/index.css` | **100% Lighthouse A11y score** (Dashboard). High-contrast dark mode, ARIA live regions. |
-| **Testing** | `backend/tests/`, `frontend/src/__tests__/` | Pytest (async) + Vitest. Coverage > 90%. Mutation score: **27.7%**. |
-| **Efficiency/Performance** | `frontend/src/lib/api.ts` | **81-82% Lighthouse Performance**. Async FastAPI + React Query-style caching. |
+| **Accessibility** | Lighthouse Report, `frontend/src/index.css` | **100% Lighthouse A11y score** (Hero/Dashboard). High-contrast dark mode, ARIA live regions. |
+| **Testing** | `backend/tests/`, `frontend/src/__tests__/` | Pytest (async) + Vitest. Coverage > 90%. Mutation score: **63.3%**. |
+| **Efficiency/Performance** | `frontend/src/lib/api.ts` | **94% Lighthouse Performance**. Async FastAPI + React Query-style caching. |
 | **GenAI Necessity** | `backend/app/services/gemini_service.py` | Multi-signal correlation (heat + crowd + time) for root-cause inference, not just simple rule-based matching. |
 | **Problem Statement Alignment** | `README.md` | Solves HackToSkill Challenge 4 by closing the gap between isolated heat and crowd tracking systems. |
 

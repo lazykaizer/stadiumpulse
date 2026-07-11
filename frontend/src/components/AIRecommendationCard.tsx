@@ -154,10 +154,16 @@ export function AIRecommendationCard({
                   key={lang}
                   className="text-xs bg-[var(--color-bg-primary)] rounded-lg p-3"
                 >
-                  <span className="font-semibold text-[var(--color-accent)]">
+                  <span className="font-semibold text-[var(--color-accent)] block mb-1">
                     {LANGUAGE_NAMES[lang] || lang.toUpperCase()}:
-                  </span>{" "}
-                  <span className="text-[var(--color-text-secondary)]">{text as string}</span>
+                  </span>
+                  <div
+                    className="text-[var(--color-text-secondary)]"
+                    lang={lang}
+                    dir={["ar", "he", "fa", "ur"].includes(lang) ? "rtl" : "ltr"}
+                  >
+                    {text as string}
+                  </div>
                 </div>
               ))}
             </div>
