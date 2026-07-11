@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+
 def test_get_zones(client: TestClient):
     response = client.get("/api/zones")
     assert response.status_code == 200

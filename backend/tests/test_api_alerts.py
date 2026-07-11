@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+
 def test_get_alerts(client: TestClient):
     response = client.get("/api/alerts")
     assert response.status_code == 200
@@ -18,7 +19,7 @@ def test_get_alerts_filtering(client: TestClient):
     response = client.get("/api/alerts?severity=high&zone_id=zone-a")
     assert response.status_code == 200
     feed = response.json()
-    
+
     # We might not have any seeded alerts matching this exactly right at startup,
     # but the API should return 200 and an empty list or matching list.
     assert isinstance(feed["alerts"], list)

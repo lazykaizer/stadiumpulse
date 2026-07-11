@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from app.main import app
+
 
 def test_health_check(client: TestClient):
     response = client.get("/api/health")
@@ -17,7 +17,7 @@ def test_security_headers(client: TestClient):
     assert "Content-Security-Policy" in response.headers
 
 def test_rate_limit(client: TestClient):
-    # Depending on how fast slowapi catches it or how it's configured, 
+    # Depending on how fast slowapi catches it or how it's configured,
     # we might need to hit it multiple times, but 60/min is a lot to loop.
     # We will just verify it returns 200 for one hit and does not crash.
     response = client.get("/api/health")
