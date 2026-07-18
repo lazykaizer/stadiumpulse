@@ -71,13 +71,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     # --- Middleware ---
 
-    # CORS
+    # CORS — locked to specific methods and headers for defense-in-depth
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "OPTIONS"],
+        allow_headers=["Content-Type", "Authorization", "X-Request-ID"],
     )
 
     # Security headers (extracted middleware module)
