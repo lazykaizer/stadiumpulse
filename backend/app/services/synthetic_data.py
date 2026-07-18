@@ -15,7 +15,7 @@ import random
 from datetime import UTC, datetime, timedelta
 from typing import cast
 
-from app.models.zone import RiskLevel, ZoneData, ZoneTrend
+from app.models.zone import RiskLevel, ZoneData, ZoneTrend, compute_risk_level
 
 # Zone definitions — configurable stadium layout
 ZONE_CONFIGS: list[dict[str, object]] = [
@@ -235,22 +235,12 @@ class SyntheticDataGenerator:
 
     @staticmethod
     def _compute_risk(density: float, heat_index: float) -> RiskLevel:
-        """Compute risk level from density and heat — simple rules for initial classification.
+        """Compute risk level from density and heat.
 
-        The AI reasoning layer adds the nuanced, multi-signal correlation on top.
+        Delegates to the canonical ``compute_risk_level`` in ``app.models.zone``
+        to ensure a single source of truth for threshold logic.
         """
-        high_density = density > 80.0
-        elevated_density = density > 50.0
-        high_heat = heat_index > 38.0
-        elevated_heat = heat_index > 34.0
-
-        if high_density and high_heat:
-            return RiskLevel.CRITICAL
-        if high_density or (elevated_density and high_heat):
-            return RiskLevel.HIGH
-        if elevated_density or elevated_heat:
-            return RiskLevel.MODERATE
-        return RiskLevel.LOW
+        return compute_risk_level(density, heat_index)
 
     @staticmethod
     def get_historical_incidents(zone_id: str) -> list[str]:

@@ -112,7 +112,7 @@ class FirestoreService:
         if zone is None:
             return None
 
-        history = await self._get_zone_history(zone_id)
+        history = await self.get_zone_history(zone_id)
         rec = self._recommendations.get(zone_id)
 
         return ZoneDetail(
@@ -162,7 +162,7 @@ class FirestoreService:
                 batch.set(zones_ref.document(z.zone_id), z.model_dump(mode="json"))
             batch.commit()
 
-    async def _get_zone_history(self, zone_id: str) -> ZoneHistory:
+    async def get_zone_history(self, zone_id: str) -> ZoneHistory:
         """Get trend history for a zone."""
         if self._in_memory:
             raw = self._zone_history.get(zone_id, [])

@@ -53,7 +53,7 @@ async def run_reasoning(request: Request, zone_id: str | None = None) -> Reasoni
         try:
             result = await _reason_for_zone(z.zone_id, fs, gemini)
             results.append(result)
-        except Exception as exc:
+        except (HTTPException, ValueError, RuntimeError) as exc:
             logger.error("reasoning_failed_for_zone", zone_id=z.zone_id, error=str(exc))
 
     if not results:
@@ -88,7 +88,7 @@ async def _reason_for_zone(
         raise HTTPException(status_code=404, detail=f"Zone '{zone_id}' not found")
 
     # Get history for trend data
-    history = await fs._get_zone_history(zone_id)
+    history = await fs.get_zone_history(zone_id)
     density_trend = [t.crowd_density for t in history.trends[-7:]]
     heat_trend = [t.heat_index for t in history.trends[-7:]]
 

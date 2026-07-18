@@ -14,6 +14,7 @@ import structlog
 
 from app.config import Settings
 from app.models.reasoning import ReasoningInput, ReasoningOutput
+from app.models.zone import compute_risk_level
 from app.services.prompt_builder import build_reasoning_prompt
 
 logger = structlog.get_logger("app.services.gemini")
@@ -46,7 +47,7 @@ class GeminiService:
                 project=settings.gcp_project,
                 model=self._model_name,
             )
-        except Exception as exc:
+        except (ImportError, OSError, RuntimeError) as exc:
             logger.warning("gemini_fallback_to_mock", error=str(exc))
             self._mock_mode = True
 
@@ -238,14 +239,12 @@ class GeminiService:
         density: float,
         heat: float,
     ) -> Literal["low", "moderate", "high", "critical"]:
-        """Classify severity from crowd density and heat index signals."""
-        if density > 80 and heat > 38:
-            return "critical"
-        if density > 70 or (density > 50 and heat > 38):
-            return "high"
-        if density > 50 or heat > 34:
-            return "moderate"
-        return "low"
+        """Classify severity from crowd density and heat index signals.
+
+        Delegates to the canonical ``compute_risk_level`` to maintain
+        a single source of truth for threshold logic.
+        """
+        return compute_risk_level(density, heat).value  # type: ignore[return-value]
 
     @staticmethod
     def _compute_trend_direction(trend: list[float]) -> str:

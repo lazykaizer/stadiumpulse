@@ -15,7 +15,7 @@ import structlog
 from fastapi import APIRouter, HTTPException, Request, UploadFile
 
 from app.models.upload import UploadResult, UploadRow, UploadValidationError
-from app.models.zone import RiskLevel, ZoneData
+from app.models.zone import RiskLevel, ZoneData, compute_risk_level
 from app.services.synthetic_data import SyntheticDataGenerator
 
 logger = structlog.get_logger("app.routers.upload")
@@ -98,7 +98,7 @@ async def upload_data(request: Request, file: UploadFile) -> UploadResult:
         try:
             validated = UploadRow.model_validate(raw_row)
             valid_rows.append(validated)
-        except Exception as exc:
+        except (ValueError, TypeError) as exc:
             errors.append(
                 UploadValidationError(
                     row=i,
@@ -276,15 +276,8 @@ def _rows_to_zones(rows: list[UploadRow]) -> list[ZoneData]:
         density = row.crowd_density
         heat = row.heat_index
 
-        # Compute risk level
-        if density > 80 and heat > 38:
-            risk = RiskLevel.CRITICAL
-        elif density > 80 or (density > 50 and heat > 38):
-            risk = RiskLevel.HIGH
-        elif density > 50 or heat > 34:
-            risk = RiskLevel.MODERATE
-        else:
-            risk = RiskLevel.LOW
+        # Compute risk level via canonical single-source-of-truth function
+        risk = compute_risk_level(density, heat)
 
         cap = row.capacity or 5000
         occ = row.current_occupancy or int(cap * density / 100)

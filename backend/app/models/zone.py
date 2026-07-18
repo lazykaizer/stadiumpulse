@@ -8,6 +8,17 @@ from enum import StrEnum
 from pydantic import BaseModel, Field
 
 
+# ---------------------------------------------------------------------------
+# Risk classification — single source of truth
+# ---------------------------------------------------------------------------
+
+# Thresholds (module-level constants for testability and transparency)
+DENSITY_HIGH: float = 80.0
+DENSITY_ELEVATED: float = 50.0
+HEAT_HIGH: float = 38.0
+HEAT_ELEVATED: float = 34.0
+
+
 class RiskLevel(StrEnum):
     """Risk classification for a stadium zone."""
 
@@ -15,6 +26,32 @@ class RiskLevel(StrEnum):
     MODERATE = "moderate"
     HIGH = "high"
     CRITICAL = "critical"
+
+
+def compute_risk_level(density: float, heat_index: float) -> RiskLevel:
+    """Canonical risk classification from crowd density and heat index.
+
+    This is the **single source of truth** for deterministic risk grading.
+    All modules (upload, synthetic data, reasoning mock) delegate here.
+
+    Rules:
+        - CRITICAL: density > 80% AND heat > 38°C  (compounding dual-risk)
+        - HIGH:     density > 80% OR (density > 50% AND heat > 38°C)
+        - MODERATE:  density > 50% OR heat > 34°C
+        - LOW:       below all thresholds
+    """
+    high_density = density > DENSITY_HIGH
+    elevated_density = density > DENSITY_ELEVATED
+    high_heat = heat_index > HEAT_HIGH
+    elevated_heat = heat_index > HEAT_ELEVATED
+
+    if high_density and high_heat:
+        return RiskLevel.CRITICAL
+    if high_density or (elevated_density and high_heat):
+        return RiskLevel.HIGH
+    if elevated_density or elevated_heat:
+        return RiskLevel.MODERATE
+    return RiskLevel.LOW
 
 
 class ZoneTrend(BaseModel):
