@@ -12,9 +12,9 @@
 
 GenAI platform for the **FIFA World Cup 2026** that enhances venue operations and crowd safety. Organizers get a live multi-signal operational dashboard (heat, density, incidents) powered by an AI reasoning engine for real-time, proactive decision support.
 
-**Live demo:** <https://stadiumpulse-851755555005.asia-south1.run.app>
+**Live demo:** <https://stadiumpulse-frontend-640566328822.us-central1.run.app/>
 **Repository:** <https://github.com/lazykaizer/stadiumpulse>  
-**Region:** asia-south1 · **GCP project:** stadiumpulse-2026
+**Region:** us-central1 · **GCP project:** stadiumpulse-2026
 
 *HackToSkill Prompt Wars — Challenge 4: Smart Stadiums & Tournament Operations*
 
