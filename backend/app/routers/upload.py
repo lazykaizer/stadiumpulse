@@ -15,7 +15,7 @@ import structlog
 from fastapi import APIRouter, HTTPException, Request, UploadFile
 
 from app.models.upload import UploadResult, UploadRow, UploadValidationError
-from app.models.zone import RiskLevel, ZoneData, compute_risk_level
+from app.models.zone import ZoneData, compute_risk_level
 from app.services.synthetic_data import SyntheticDataGenerator
 
 logger = structlog.get_logger("app.routers.upload")
