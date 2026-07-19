@@ -102,6 +102,18 @@ export function UploadPage() {
             will immediately reflect your uploaded dataset.
           </p>
 
+          <div className="bg-[var(--color-bg-primary)] p-4 rounded-lg mb-6 border border-[var(--color-border)]">
+            <h3 className="text-sm font-semibold text-[var(--color-text-primary)] mb-2 flex items-center gap-2">
+              <span role="img" aria-label="wave">👋</span> Evaluating the project?
+            </h3>
+            <p className="text-sm text-[var(--color-text-secondary)] mb-2">
+              Download the <a href="/sample_data.csv" download className="text-[var(--color-accent)] underline font-medium">sample_data.csv</a> file and upload it below.
+            </p>
+            <p className="text-xs text-[var(--color-text-muted)]">
+              This sample data simulates a high-alert scenario where <strong>Zone C</strong> and <strong>Zone F</strong> will turn red (critical risk) due to extreme heat and high crowd density. Watch the AI instantly generate real-time recommendations and multilingual alerts for these zones!
+            </p>
+          </div>
+
           {/* Drag-and-drop area */}
           <div
             className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
