@@ -244,7 +244,7 @@ class GeminiService:
         Delegates to the canonical ``compute_risk_level`` to maintain
         a single source of truth for threshold logic.
         """
-        return compute_risk_level(density, heat).value  # type: ignore[return-value]
+        return compute_risk_level(density, heat).value
 
     @staticmethod
     def _compute_trend_direction(trend: list[float]) -> str:
